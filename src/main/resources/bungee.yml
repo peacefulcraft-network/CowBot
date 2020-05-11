@@ -1,0 +1,4 @@
+name: CowBot BungeeCord - Discord Bot
+main: net.peacefulcraft.cowbot.CowBot
+version: 0.0.1
+author: PeacefulCraft Network
