@@ -8,6 +8,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.peacefulcraft.cowbot.commands.CowBotCommand;
+import net.peacefulcraft.cowbot.events.GameChatEvent;
 import net.peacefulcraft.cowbot.events.StaffChatEvent;
 
 public class CowBot extends Plugin{
@@ -27,6 +28,7 @@ public class CowBot extends Plugin{
     public static Cow getCow() { return cow; }
 
   private StaffChatEvent staffChatEventHandler;
+  private GameChatEvent gameChatEventHandler;
 
   public CowBot() {
     instance = this;
@@ -41,6 +43,11 @@ public class CowBot extends Plugin{
       this.cow =  new Cow(config.getBotToken());
       botThread = new Thread(this.cow, "CowBot - Discord Bot");
       botThread.start();
+
+      if(config.getGamechatChannelId() != null && config.getGamechatChannelId().length() > 0) {
+        gameChatEventHandler = new GameChatEvent();
+        getProxy().getPluginManager().registerListener(this, gameChatEventHandler);
+      }
 
       if (config.getStaffchatChannelId() != null && config.getStaffchatChannelId().length() > 0) {
         staffChatEventHandler = new StaffChatEvent();
@@ -59,6 +66,11 @@ public class CowBot extends Plugin{
   public void onDisable() {
     if (cow != null) { cow.onDisable(); }
     if (config != null) { config.onDisable(); }
+
+    if (gameChatEventHandler != null) {
+      getProxy().getPluginManager().unregisterListener(gameChatEventHandler);
+      gameChatEventHandler = null;
+    }
 
     if (staffChatEventHandler != null) {
       getProxy().getPluginManager().unregisterListener(staffChatEventHandler);

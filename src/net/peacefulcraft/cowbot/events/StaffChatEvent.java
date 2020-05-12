@@ -5,15 +5,17 @@ import discord4j.core.object.util.Snowflake;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.peacefulcraft.cowbot.CowBot;
+import net.peacefulcraft.cowbot.handlers.ModChatMessageHandler;
 import xyz.olivermartin.multichat.bungee.events.PostStaffChatEvent;
 
 public class StaffChatEvent implements Listener {
   @EventHandler
   public void staffChatEvent(PostStaffChatEvent event) {
-    CowBot.logMessage("Got staff chat");
     if (event.getType() == "mod") {
-      CowBot.logMessage("Got mod chat");
       if (CowBot.getConfig().getStaffchatChannelId() == null || CowBot.getConfig().getStaffchatChannelId().length() < 1) { return; }
+      
+      // Don't echo back messages from events the bot generated
+      if (ModChatMessageHandler.isReplayMessage(event.getSenderName(), event.getRawMessage())) { return; }
 
       CowBot.runAsync(
         () -> {

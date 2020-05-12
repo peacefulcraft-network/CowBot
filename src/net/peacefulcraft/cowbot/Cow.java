@@ -11,6 +11,7 @@ import discord4j.core.object.entity.Message;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import net.peacefulcraft.cowbot.handlers.DisconnectEventHandler;
+import net.peacefulcraft.cowbot.handlers.GameChatMessageHandler;
 import net.peacefulcraft.cowbot.handlers.GuildCreateEventHandler;
 import net.peacefulcraft.cowbot.handlers.ModChatMessageHandler;
 import net.peacefulcraft.cowbot.handlers.PingMessageHandler;
@@ -46,9 +47,15 @@ public class Cow implements Runnable{
 
     bot.getEventDispatcher().on(MessageCreateEvent.class)
       .map(MessageCreateEvent::getMessage)
+      .filter(message -> message.getChannelId().asString().equalsIgnoreCase(CowBot.getConfig().getGamechatChannelId()))
+      .filter(message -> message.getAuthor().map(user -> !user.isBot()).orElse(false))
+      .subscribe(GameChatMessageHandler::handle);
+
+    bot.getEventDispatcher().on(MessageCreateEvent.class)
+      .map(MessageCreateEvent::getMessage)
       .filter(message -> message.getChannelId().asString().equalsIgnoreCase(CowBot.getConfig().getStaffchatChannelId()))
       .filter(message -> message.getAuthor().map(user -> !user.isBot()).orElse(false))
-      .subscribe(ModChatMessageHandler::accept);
+      .subscribe(ModChatMessageHandler::handle);
   }
 
   @Override
