@@ -21,10 +21,8 @@ public class ListCommandHandler {
     for(ProxiedPlayer player : CowBot.getInstance().getProxy().getPlayers()) {
       counts.get(player.getServer().getInfo().getName()).add(player.getName());
     }
-    CowBot.logError("ready for embed");
     CowBot.runAsync(
       () -> {
-        CowBot.logError("generating embed");
         message.getChannel().block().createMessage(messageSpec -> messageSpec.setEmbed(embed -> {
           embed.setColor(new Color(169, 220, 169));
           embed.setAuthor("PeacefulCraft Network Status", "https://status.peacefulcraft.net", "https://www.peacefulcraft.net/assets/logo-aglqhi2l.png");
