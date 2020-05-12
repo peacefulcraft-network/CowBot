@@ -6,9 +6,9 @@ import net.peacefulcraft.cowbot.CowBot;
 public class DisconnectEventHandler {
   public static void handle(DisconnectEvent t) {
     if (CowBot.getCow().isActive()) {
-      CowBot.logMessage("Disconnected from Discord Gateway");
-    } else {
       CowBot.logError("Connection to Discord Gateway lost.");
+    } else {
+      CowBot.logMessage("Gracefully Disconnected from Discord Gateway");
     }
   }
 }

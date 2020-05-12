@@ -95,7 +95,7 @@ public class Cow implements Runnable{
   public void onDisable() {
     active = false;
     if (bot.isConnected()) {
-      bot.logout();
+      bot.logout().block();
     }
     bot = null;
   }
