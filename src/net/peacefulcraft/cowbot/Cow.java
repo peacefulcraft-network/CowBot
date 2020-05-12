@@ -48,7 +48,10 @@ public class Cow implements Runnable{
 
     bot.getEventDispatcher().on(MessageCreateEvent.class)
       .map(MessageCreateEvent::getMessage)
-      .filter(message -> message.getChannelId().asString().equalsIgnoreCase(CowBot.getConfig().getCCChannelId()))
+      .filter(message -> 
+        message.getChannelId().asString().equalsIgnoreCase(CowBot.getConfig().getCCChannelId())
+        || message.getChannelId().asString().equalsIgnoreCase(CowBot.getConfig().getStaffchatChannelId())
+      )
       .filter(message -> message.getContent().orElse("").equalsIgnoreCase("!poke"))
       .flatMap(PingMessageHandler::handle)
       .subscribe();
