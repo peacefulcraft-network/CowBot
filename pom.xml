@@ -66,5 +66,12 @@
 			<artifactId>discord4j-core</artifactId>
 			<version>3.0.14</version>
 		</dependency>
+		<dependency>
+			<groupId>xyz.olivermartin</groupId>
+			<artifactId>multichat</artifactId>
+			<version>1.9.2</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/multichat-1.9.2.jar</systemPath>
+		</dependency>
   </dependencies>
 </project>
