@@ -1,4 +1,4 @@
-package net.peacefulcraft.cowbot.consumers;
+package net.peacefulcraft.cowbot.handlers;
 
 import java.util.function.Consumer;
 

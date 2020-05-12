@@ -8,6 +8,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.peacefulcraft.cowbot.commands.CowBotCommand;
+import net.peacefulcraft.cowbot.events.StaffChatEvent;
 
 public class CowBot extends Plugin{
 
@@ -25,6 +26,8 @@ public class CowBot extends Plugin{
     private static Thread botThread;
     public static Cow getCow() { return cow; }
 
+  private StaffChatEvent staffChatEventHandler;
+
   public CowBot() {
     instance = this;
     logger = getLogger();
@@ -38,6 +41,11 @@ public class CowBot extends Plugin{
       this.cow =  new Cow(config.getBotToken());
       botThread = new Thread(this.cow, "CowBot - Discord Bot");
       botThread.start();
+
+      if (config.getStaffchatChannelId() != null && config.getStaffchatChannelId().length() > 0) {
+        staffChatEventHandler = new StaffChatEvent();
+        getProxy().getPluginManager().registerListener(this, staffChatEventHandler);
+      }
     } else {
       logWarning("No bot token found in config.yml. Add one and then run /cb reload");
     }
@@ -51,7 +59,17 @@ public class CowBot extends Plugin{
   public void onDisable() {
     if (cow != null) { cow.onDisable(); }
     if (config != null) { config.onDisable(); }
+
+    if (staffChatEventHandler != null) {
+      getProxy().getPluginManager().unregisterListener(staffChatEventHandler);
+      staffChatEventHandler = null;
+    }
+
     logMessage("CowBot Disabled");
+  }
+
+  public static void runAsync(Runnable task) {
+    instance.getProxy().getScheduler().runAsync(instance, task);
   }
 
   public static BaseComponent generateTextComponent(String message) {
