@@ -83,7 +83,6 @@ public class Cow implements Runnable{
         return true;
       }
     }
-
     return false;
   }
 
