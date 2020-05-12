@@ -9,26 +9,41 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.peacefulcraft.cowbot.commands.CowBotCommand;
 import net.peacefulcraft.cowbot.events.GameChatEvent;
+import net.peacefulcraft.cowbot.events.JoinNetworkEvent;
+import net.peacefulcraft.cowbot.events.LeaveNetworkEvent;
 import net.peacefulcraft.cowbot.events.StaffChatEvent;
 
-public class CowBot extends Plugin{
+public class CowBot extends Plugin {
 
   public static CowBot instance;
-    public static CowBot getInstance() { return instance; }
 
-  public static String getPluginPrefix() { return ChatColor.GREEN + "[" + ChatColor.BLUE + "Cow" + ChatColor.GREEN + "]" + ChatColor.RESET; }
+  public static CowBot getInstance() {
+    return instance;
+  }
+
+  public static String getPluginPrefix() {
+    return ChatColor.GREEN + "[" + ChatColor.BLUE + "Cow" + ChatColor.GREEN + "]" + ChatColor.RESET;
+  }
 
   private static Configuration config;
-    public static Configuration getConfig() { return config; }
+
+  public static Configuration getConfig() {
+    return config;
+  }
 
   private static Logger logger;
 
   private static Cow cow;
-    private static Thread botThread;
-    public static Cow getCow() { return cow; }
+  private static Thread botThread;
+
+  public static Cow getCow() {
+    return cow;
+  }
 
   private StaffChatEvent staffChatEventHandler;
   private GameChatEvent gameChatEventHandler;
+  private JoinNetworkEvent joinNetworkEventHandler;
+  private LeaveNetworkEvent leaveNetworkEventHandler;
 
   public CowBot() {
     instance = this;
@@ -47,6 +62,12 @@ public class CowBot extends Plugin{
       if(config.getGamechatChannelId() != null && config.getGamechatChannelId().length() > 0) {
         gameChatEventHandler = new GameChatEvent();
         getProxy().getPluginManager().registerListener(this, gameChatEventHandler);
+
+        joinNetworkEventHandler = new JoinNetworkEvent();
+        getProxy().getPluginManager().registerListener(this, joinNetworkEventHandler);
+
+        leaveNetworkEventHandler = new LeaveNetworkEvent();
+        getProxy().getPluginManager().registerListener(this, leaveNetworkEventHandler);
       }
 
       if (config.getStaffchatChannelId() != null && config.getStaffchatChannelId().length() > 0) {
@@ -69,7 +90,11 @@ public class CowBot extends Plugin{
 
     if (gameChatEventHandler != null) {
       getProxy().getPluginManager().unregisterListener(gameChatEventHandler);
+      getProxy().getPluginManager().unregisterListener(joinNetworkEventHandler);
+      getProxy().getPluginManager().unregisterListener(leaveNetworkEventHandler);
       gameChatEventHandler = null;
+      joinNetworkEventHandler = null;
+      leaveNetworkEventHandler = null;
     }
 
     if (staffChatEventHandler != null) {
