@@ -58,7 +58,6 @@ public class Cow implements Runnable{
 
     bot.getEventDispatcher().on(MessageCreateEvent.class)
       .map(MessageCreateEvent::getMessage)
-      .filter(message -> subscribedChannels.contains(message.getChannelId().asString()))
       .filter(message -> message.getContent().orElse("").equalsIgnoreCase("!list"))
       .subscribe(ListCommandHandler::handle);
 
