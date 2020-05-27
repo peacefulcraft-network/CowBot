@@ -6,6 +6,7 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.peacefulcraft.cowbot.CowBot;
 import net.peacefulcraft.cowbot.handlers.ModChatMessageHandler;
+import net.peacefulcraft.cowbot.translation.RankTranslatior;
 import xyz.olivermartin.multichat.bungee.events.PostStaffChatEvent;
 
 public class StaffChatEvent implements Listener {
@@ -19,7 +20,9 @@ public class StaffChatEvent implements Listener {
 
       CowBot.runAsync(
         () -> {
-          String message = "**" + event.getSenderName() + "**: " + event.getRawMessage();
+          event.getSender().getGroups().forEach((group) -> CowBot.logMessage(group));
+          String rank = RankTranslatior.serverRankToDiscordEmoji(event.getSender().getGroups().iterator().next());
+          String message = rank + " **" + event.getSenderName() + "**: " + event.getRawMessage();
           Snowflake staffChannelId = Snowflake.of(CowBot.getConfig().getStaffchatChannelId());
           CowBot.getCow().getBot().getChannelById(staffChannelId)
             .ofType(TextChannel.class)

@@ -32,7 +32,7 @@ public class ColorTranslator {
   }};
 
   public static ChatColor ColorToColorCode(Color color) {
-    String hex = Integer.toHexString(color.getRGB());
+    String hex = Integer.toHexString(color.getRGB()).toUpperCase();
     if (colorMap.containsKey(hex)) {
       return colorMap.get(hex);
     } else {

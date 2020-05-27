@@ -73,5 +73,11 @@
 			<scope>system</scope>
 			<systemPath>${project.basedir}/lib/multichat-1.9.2.jar</systemPath>
 		</dependency>
+		<dependency>
+			<groupId>net.luckperms</groupId>
+			<artifactId>api</artifactId>
+			<version>5.0</version>
+			<scope>provided</scope>
+		</dependency>
   </dependencies>
 </project>

@@ -40,4 +40,5 @@
     <factorypathentry kind="VARJAR" id="M2_REPO/com/discord4j/stores-api/3.0.14/stores-api-3.0.14.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/com/austinv11/servicer/Servicer/1.0.0/Servicer-1.0.0.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="EXTJAR" id="D:\Development\Java\CowBot\lib\multichat-1.9.2.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/net/luckperms/api/5.0/api-5.0.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>
