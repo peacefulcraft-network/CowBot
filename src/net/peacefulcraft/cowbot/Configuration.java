@@ -77,4 +77,9 @@ public class Configuration {
 
   public String getCCChannelId() { return config.getString("cc_channel_id"); }
   public void setCCChannelId(String id) { config.set("cc_channel_id", id); saveConfiguration(); }
+
+  protected String getDatabaseHost() { return config.getString("db_host"); }
+  protected String getDatabaseUser() { return config.getString("db_user"); }
+  protected String getDatabasePassword() { return config.getString("db_password"); }
+  protected String getDatabaseName() { return config.getString("db_password"); }
 }

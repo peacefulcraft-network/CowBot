@@ -4,3 +4,8 @@ bot_token: ''
 gamechat_channel_id: ''
 staffchat_channel_id: ''
 cc_channel_id: ''
+
+db_host: ''
+db_user: ''
+db_password: ''
+db_name: ''

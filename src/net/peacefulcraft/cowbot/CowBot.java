@@ -15,30 +15,22 @@ import net.peacefulcraft.cowbot.events.StaffChatEvent;
 
 public class CowBot extends Plugin {
 
-  public static CowBot instance;
-
-  public static CowBot getInstance() {
-    return instance;
-  }
-
   public static String getPluginPrefix() {
     return ChatColor.GREEN + "[" + ChatColor.BLUE + "Cow" + ChatColor.GREEN + "]" + ChatColor.RESET;
   }
 
-  private static Configuration config;
+  public static CowBot instance;
+    public static CowBot getInstance() { return instance; }
 
-  public static Configuration getConfig() {
-    return config;
-  }
+  private static Configuration config;
+    public static Configuration getConfig() { return config; }
 
   private static Logger logger;
-
   private static Cow cow;
+    public static Cow getCow() { return cow; }
   private static Thread botThread;
-
-  public static Cow getCow() {
-    return cow;
-  }
+  private static HikariManager dbPool;
+    public static HikariManager getHikariPool() { return dbPool; }
 
   private StaffChatEvent staffChatEventHandler;
   private GameChatEvent gameChatEventHandler;
@@ -55,7 +47,13 @@ public class CowBot extends Plugin {
   public void onEnable() {
     config = new Configuration();
     if (config.getBotToken().length() > 0) {
-      this.cow =  new Cow(config.getBotToken());
+      dbPool = new HikariManager(config);
+      if (!dbPool.isAlive()) {
+        logError("Unable to establish connections to MySQL server. Startup aborted.");
+        throw new RuntimeException("Unable to establish connections to MySQL server. Startup aborted.");
+      }
+
+      this.cow = new Cow(config.getBotToken());
       botThread = new Thread(this.cow, "CowBot - Discord Bot");
       botThread.start();
 
@@ -85,9 +83,6 @@ public class CowBot extends Plugin {
   }
 
   public void onDisable() {
-    if (cow != null) { cow.onDisable(); }
-    if (config != null) { config.onDisable(); }
-
     if (gameChatEventHandler != null) {
       getProxy().getPluginManager().unregisterListener(gameChatEventHandler);
       getProxy().getPluginManager().unregisterListener(joinNetworkEventHandler);
@@ -101,6 +96,10 @@ public class CowBot extends Plugin {
       getProxy().getPluginManager().unregisterListener(staffChatEventHandler);
       staffChatEventHandler = null;
     }
+
+    if (cow != null) { cow.onDisable(); }
+    if (config != null) { config.onDisable(); }
+    if (dbPool != null && dbPool.isAlive()) { dbPool.close(); }
 
     logMessage("CowBot Disabled");
   }
