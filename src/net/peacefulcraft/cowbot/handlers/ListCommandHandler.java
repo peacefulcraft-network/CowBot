@@ -29,10 +29,10 @@ public class ListCommandHandler {
           
           long graphEnd = ZonedDateTime.now().toInstant().toEpochMilli() - 60000;
           long graphStart = graphEnd - 3600000;
-          embed.setImage("https://status.peacefulcraft.net/render/d-solo/MSFaPWjZz/peacefulcraft-network-player-counts?orgId=1&panelId=4&from=" + graphStart + "&to=" + graphEnd);
+          // embed.setImage("https://status.peacefulcraft.net/render/d-solo/MSFaPWjZz/peacefulcraft-network-player-counts?orgId=1&panelId=4&from=" + graphStart + "&to=" + graphEnd);
 
           embed.setTimestamp(Instant.now());
-          embed.setFooter("Network Player Count - Last Hour", "");
+          embed.setFooter("Network Player Counts", "");
       
           for(Entry<String, ArrayList<String>> list : counts.entrySet()) {
             String userList = "**(" + list.getValue().size() + ")**";
