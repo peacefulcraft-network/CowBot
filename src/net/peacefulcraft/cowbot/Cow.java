@@ -3,11 +3,12 @@ package net.peacefulcraft.cowbot;
 import java.util.ArrayList;
 
 import discord4j.core.DiscordClient;
-import discord4j.core.DiscordClientBuilder;
+import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.guild.GuildCreateEvent;
 import discord4j.core.event.domain.lifecycle.DisconnectEvent;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Message;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import net.peacefulcraft.cowbot.handlers.DisconnectEventHandler;
@@ -19,8 +20,11 @@ import net.peacefulcraft.cowbot.handlers.PingMessageHandler;
 import net.peacefulcraft.cowbot.handlers.ReadyEventHandler;
 
 public class Cow implements Runnable{
-  private static DiscordClient bot;
-    public DiscordClient getBot() { return bot; }
+
+  private GatewayDiscordClient gateway;
+    public GatewayDiscordClient getGatewayConnection() { return gateway; }
+
+  private String token;
 
   private boolean active = true;
     public boolean isActive() { return active; }
@@ -28,52 +32,7 @@ public class Cow implements Runnable{
   private ArrayList<String> subscribedChannels;
 
   public Cow(String token) {
-    bot = DiscordClientBuilder.create(token).build();
-    bot.updatePresence(Presence.online(Activity.listening("your conversations")));
-
-    subscribedChannels = new ArrayList<String>();
-    subscribedChannels.add(CowBot.getConfig().getCCChannelId());
-    subscribedChannels.add(CowBot.getConfig().getGamechatChannelId());
-    subscribedChannels.add(CowBot.getConfig().getStaffchatChannelId());
-
-    // Setup stream consumers
-    bot.getEventDispatcher().on(ReadyEvent.class)
-      .subscribe(ReadyEventHandler::handle);
-
-    bot.getEventDispatcher().on(GuildCreateEvent.class)
-      .subscribe(GuildCreateEventHandler::handle);
-
-    bot.getEventDispatcher().on(DisconnectEvent.class)
-      .subscribe(DisconnectEventHandler::handle);
-
-    bot.getEventDispatcher().on(MessageCreateEvent.class)
-      .map(MessageCreateEvent::getMessage)
-      .filter(message -> 
-        message.getChannelId().asString().equalsIgnoreCase(CowBot.getConfig().getCCChannelId())
-        || message.getChannelId().asString().equalsIgnoreCase(CowBot.getConfig().getStaffchatChannelId())
-      )
-      .filter(message -> message.getContent().orElse("").equalsIgnoreCase("!poke"))
-      .flatMap(PingMessageHandler::handle)
-      .subscribe();
-
-    bot.getEventDispatcher().on(MessageCreateEvent.class)
-      .map(MessageCreateEvent::getMessage)
-      .filter(message -> message.getContent().orElse("").equalsIgnoreCase("!list"))
-      .subscribe(ListCommandHandler::handle);
-
-    bot.getEventDispatcher().on(MessageCreateEvent.class)
-      .map(MessageCreateEvent::getMessage)
-      .filter(message -> message.getChannelId().asString().equalsIgnoreCase(CowBot.getConfig().getGamechatChannelId()))
-      .filter(message -> message.getAuthor().map(user -> !user.isBot()).orElse(false))
-      .filter(message -> !isCommand(message.getContent().orElse("")))
-      .subscribe(GameChatMessageHandler::handle);
-
-    bot.getEventDispatcher().on(MessageCreateEvent.class)
-      .map(MessageCreateEvent::getMessage)
-      .filter(message -> message.getChannelId().asString().equalsIgnoreCase(CowBot.getConfig().getStaffchatChannelId()))
-      .filter(message -> message.getAuthor().map(user -> !user.isBot()).orElse(false))
-      .filter(message -> !isCommand(message.getContent().orElse("")))
-      .subscribe(ModChatMessageHandler::handle);
+    this.token = token;
   }
 
   public static boolean isCommand(String content) {
@@ -87,16 +46,65 @@ public class Cow implements Runnable{
 
   @Override
   public void run() {
+    gateway = DiscordClient.create(token).login().block();
+    gateway.updatePresence(Presence.online(Activity.listening("your conversations")));
+
+    subscribedChannels = new ArrayList<String>();
+    subscribedChannels.add(CowBot.getConfig().getCCChannelId());
+    subscribedChannels.add(CowBot.getConfig().getGamechatChannelId());
+    subscribedChannels.add(CowBot.getConfig().getStaffchatChannelId());
+
+    // Setup stream consumers
+    gateway.getEventDispatcher().on(ReadyEvent.class)
+      .subscribe(ReadyEventHandler::handle);
+
+    gateway.getEventDispatcher().on(GuildCreateEvent.class)
+      .subscribe(GuildCreateEventHandler::handle);
+
+    gateway.getEventDispatcher().on(DisconnectEvent.class)
+      .subscribe(DisconnectEventHandler::handle);
+
+    gateway.getEventDispatcher().on(MessageCreateEvent.class)
+      .map(MessageCreateEvent::getMessage)
+      .filter(message -> 
+        message.getChannelId().asString().equalsIgnoreCase(CowBot.getConfig().getCCChannelId())
+        || message.getChannelId().asString().equalsIgnoreCase(CowBot.getConfig().getStaffchatChannelId())
+      )
+      .filter(message -> message.getType() == Message.Type.DEFAULT)
+      .filter(message -> message.getContent().equalsIgnoreCase("!poke"))
+      .map(PingMessageHandler::handle)
+      .subscribe();
+
+    gateway.getEventDispatcher().on(MessageCreateEvent.class)
+      .map(MessageCreateEvent::getMessage)
+      .filter(message -> message.getType() == Message.Type.DEFAULT)
+      .filter(message -> message.getContent().equalsIgnoreCase("!list"))
+      .subscribe(ListCommandHandler::handle);
+
+    gateway.getEventDispatcher().on(MessageCreateEvent.class)
+      .map(MessageCreateEvent::getMessage)
+      .filter(message -> message.getChannelId().asString().equalsIgnoreCase(CowBot.getConfig().getGamechatChannelId()))
+      .filter(message -> !message.getAuthor().get().isBot())
+      //.filter(message -> message.getAuthor().map(user -> !user.isBot()))
+      .filter(message -> message.getType() == Message.Type.DEFAULT)
+      .filter(message -> !isCommand(message.getContent()))
+      .subscribe(GameChatMessageHandler::handle);
+
+    gateway.getEventDispatcher().on(MessageCreateEvent.class)
+      .map(MessageCreateEvent::getMessage)
+      .filter(message -> message.getChannelId().asString().equalsIgnoreCase(CowBot.getConfig().getStaffchatChannelId()))
+      .filter(message -> !message.getAuthor().get().isBot())
+      .filter(message -> message.getType() == Message.Type.DEFAULT)
+      .filter(message -> !isCommand(message.getContent()))
+      .subscribe(ModChatMessageHandler::handle);
+
     CowBot.logMessage("Obtaining thread lock");
-    bot.login().block();
+    gateway.onDisconnect().block();
     CowBot.logMessage("Releasing thread lock");
   }
 
   public void onDisable() {
     active = false;
-    if (bot.isConnected()) {
-      bot.logout().block();
-    }
-    bot = null;
+    gateway.logout().block();
   }
 }

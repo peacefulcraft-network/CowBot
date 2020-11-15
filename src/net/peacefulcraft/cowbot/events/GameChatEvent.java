@@ -1,7 +1,7 @@
 package net.peacefulcraft.cowbot.events;
 
-import discord4j.core.object.entity.TextChannel;
-import discord4j.core.object.util.Snowflake;
+import discord4j.common.util.Snowflake;
+import discord4j.core.object.entity.channel.TextChannel;
 import net.luckperms.api.LuckPermsProvider;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.plugin.Listener;
@@ -22,7 +22,7 @@ public class GameChatEvent implements Listener {
         );
         String message = rank + " **" + ChatColor.stripColor(event.getRawSenderNickname()) + "**: " + event.getRawMessage();
         Snowflake gamechatChannelId = Snowflake.of(CowBot.getConfig().getGamechatChannelId());
-        CowBot.getCow().getBot().getChannelById(gamechatChannelId)
+        CowBot.getCow().getGatewayConnection().getChannelById(gamechatChannelId)
           .ofType(TextChannel.class)
           .flatMap(channel -> channel.createMessage(message))
           .block();

@@ -1,6 +1,5 @@
 package net.peacefulcraft.cowbot.handlers;
 
-import java.awt.Color;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -9,6 +8,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import discord4j.core.object.entity.Message;
+import discord4j.rest.util.Color;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.peacefulcraft.cowbot.CowBot;
 
@@ -24,7 +24,7 @@ public class ListCommandHandler {
     CowBot.runAsync(
       () -> {
         message.getChannel().block().createMessage(messageSpec -> messageSpec.setEmbed(embed -> {
-          embed.setColor(new Color(169, 220, 169));
+          embed.setColor(Color.of(169, 220, 169));
           embed.setAuthor("PeacefulCraft Network Status", "https://status.peacefulcraft.net", "https://www.peacefulcraft.net/assets/logo-aglqhi2l.png");
           
           long graphEnd = ZonedDateTime.now().toInstant().toEpochMilli() - 60000;

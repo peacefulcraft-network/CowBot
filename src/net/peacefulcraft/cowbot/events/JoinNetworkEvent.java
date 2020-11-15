@@ -1,7 +1,7 @@
 package net.peacefulcraft.cowbot.events;
 
-import discord4j.core.object.entity.TextChannel;
-import discord4j.core.object.util.Snowflake;
+import discord4j.common.util.Snowflake;
+import discord4j.core.object.entity.channel.TextChannel;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
@@ -21,7 +21,7 @@ public class JoinNetworkEvent implements Listener{
     CowBot.runAsync(
       () -> {
         Snowflake gamechatChannelId = Snowflake.of(CowBot.getConfig().getGamechatChannelId());
-        CowBot.getCow().getBot().getChannelById(gamechatChannelId)
+        CowBot.getCow().getGatewayConnection().getChannelById(gamechatChannelId)
           .ofType(TextChannel.class)
           .flatMap(channel -> channel.createMessage(message))
           .block();

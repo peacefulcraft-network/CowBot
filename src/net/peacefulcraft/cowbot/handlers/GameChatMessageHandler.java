@@ -11,15 +11,11 @@ import net.peacefulcraft.cowbot.CowBot;
 public class GameChatMessageHandler {
 
   public static void handle(Message message) {
-    if (!message.getAuthor().isPresent()) { return; }
     String author = message.getAuthor().get().getUsername();
-
     Member sender = message.getAuthor().get().asMember(message.getGuild().block().getId()).block();
-    ChatColor senderColor = ChatColor.of(sender.getColor().block());
+    ChatColor senderColor = ChatColor.of( "#" + sender.getColor().block().getRGB());
     String senderRank = sender.getRoles().blockLast().getName();
-
-    if (!message.getContent().isPresent()) { return; }
-    String content = message.getContent().get();
+    String content = message.getContent();
 
 
     BaseComponent[] formattedMessage = new ComponentBuilder()

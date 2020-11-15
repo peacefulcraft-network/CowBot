@@ -53,8 +53,8 @@ public class CowBot extends Plugin {
         throw new RuntimeException("Unable to establish connections to MySQL server. Startup aborted.");
       }
 
-      this.cow = new Cow(config.getBotToken());
-      botThread = new Thread(this.cow, "CowBot - Discord Bot");
+      cow = new Cow(config.getBotToken());
+      botThread = new Thread(cow, "CowBot - Discord Bot");
       botThread.start();
 
       if(config.getGamechatChannelId() != null && config.getGamechatChannelId().length() > 0) {
