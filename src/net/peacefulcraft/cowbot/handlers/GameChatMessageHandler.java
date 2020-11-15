@@ -7,16 +7,15 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.peacefulcraft.cowbot.CowBot;
-import net.peacefulcraft.cowbot.translation.ColorTranslator;
 
 public class GameChatMessageHandler {
 
   public static void handle(Message message) {
     if (!message.getAuthor().isPresent()) { return; }
-    String author = message.getAuthor().get().getUsername();;
+    String author = message.getAuthor().get().getUsername();
 
     Member sender = message.getAuthor().get().asMember(message.getGuild().block().getId()).block();
-    ChatColor senderColor = ColorTranslator.ColorToColorCode(sender.getColor().block());
+    ChatColor senderColor = ChatColor.of(sender.getColor().block());
     String senderRank = sender.getRoles().blockLast().getName();
 
     if (!message.getContent().isPresent()) { return; }
@@ -27,7 +26,6 @@ public class GameChatMessageHandler {
       .append("[").color(ChatColor.GREEN)
       .append("Discord").color(ChatColor.GOLD)
       .append("][").color(ChatColor.GREEN)
-      .append(senderRank).color(senderColor)
       .append("]").color(ChatColor.GREEN)
       .append(author + ": ").color(ChatColor.GRAY)
       .append(content).color(ChatColor.WHITE).create();
