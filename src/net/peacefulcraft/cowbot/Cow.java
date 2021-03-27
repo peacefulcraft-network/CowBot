@@ -85,7 +85,6 @@ public class Cow implements Runnable{
       .map(MessageCreateEvent::getMessage)
       .filter(message -> message.getChannelId().asString().equalsIgnoreCase(CowBot.getConfig().getGamechatChannelId()))
       .filter(message -> !message.getAuthor().get().isBot())
-      //.filter(message -> message.getAuthor().map(user -> !user.isBot()))
       .filter(message -> message.getType() == Message.Type.DEFAULT)
       .filter(message -> !isCommand(message.getContent()))
       .subscribe(GameChatMessageHandler::handle);

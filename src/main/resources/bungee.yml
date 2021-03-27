@@ -2,3 +2,4 @@ name: CowBot
 main: net.peacefulcraft.cowbot.CowBot
 version: 0.0.1
 author: PeacefulCraft Network
+depends: [ "MultiChat" ]
