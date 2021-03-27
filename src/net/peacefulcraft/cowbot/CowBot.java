@@ -58,6 +58,7 @@ public class CowBot extends Plugin {
       botThread.start();
 
       if(config.getGamechatChannelId() != null && config.getGamechatChannelId().length() > 0) {
+        logMessage("Registering gamechat listners");
         gameChatEventHandler = new GameChatEvent();
         getProxy().getPluginManager().registerListener(this, gameChatEventHandler);
 
@@ -66,11 +67,16 @@ public class CowBot extends Plugin {
 
         leaveNetworkEventHandler = new LeaveNetworkEvent();
         getProxy().getPluginManager().registerListener(this, leaveNetworkEventHandler);
+      } else {
+        logWarning("No gamechat_channel_id found in config.yml. Add one and then run /cb reload");
       }
 
       if (config.getStaffchatChannelId() != null && config.getStaffchatChannelId().length() > 0) {
+        logMessage("Registering staff chat listeners");
         staffChatEventHandler = new StaffChatEvent();
         getProxy().getPluginManager().registerListener(this, staffChatEventHandler);
+      } else {
+        logWarning("No staffchat_channel_id found in config.yml. Add one and then run /cb reload.");
       }
     } else {
       logWarning("No bot token found in config.yml. Add one and then run /cb reload");

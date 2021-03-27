@@ -13,6 +13,7 @@ import xyz.olivermartin.multichat.bungee.events.PostGlobalChatEvent;
 public class GameChatEvent implements Listener {
   @EventHandler
   public void gameChatEvent(PostGlobalChatEvent event) {
+    System.out.println("Game chat event fired");
     if (CowBot.getConfig().getGamechatChannelId() == null || CowBot.getConfig().getGamechatChannelId().length() < 1) { return; }
 
     CowBot.runAsync(
@@ -22,9 +23,10 @@ public class GameChatEvent implements Listener {
         );
         String message = rank + " **" + ChatColor.stripColor(event.getRawSenderNickname()) + "**: " + event.getRawMessage();
         Snowflake gamechatChannelId = Snowflake.of(CowBot.getConfig().getGamechatChannelId());
+        System.out.println("Sending message: " + message);
         CowBot.getCow().getGatewayConnection().getChannelById(gamechatChannelId)
           .ofType(TextChannel.class)
-          .flatMap(channel -> channel.createMessage(message))
+          .map(channel -> channel.createMessage(message))
           .block();
       }
     );
