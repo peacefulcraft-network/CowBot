@@ -49,13 +49,14 @@ public class CowBot extends Plugin {
     if (config.getBotToken().length() > 0) {
       dbPool = new HikariManager(config);
       if (!dbPool.isAlive()) {
-        logError("Unable to establish connections to MySQL server. Startup aborted.");
-        throw new RuntimeException("Unable to establish connections to MySQL server. Startup aborted.");
+        logError("Unable to establish connections to MySQL server. Profile links will not work.");
       }
 
       cow = new Cow(config.getBotToken());
       botThread = new Thread(cow, "CowBot - Discord Bot");
       botThread.start();
+
+      logMessage("Gamechat channelId: " + config.getGamechatChannelId());
 
       if(config.getGamechatChannelId() != null && config.getGamechatChannelId().length() > 0) {
         logMessage("Registering gamechat listners");

@@ -2,6 +2,7 @@ package net.peacefulcraft.cowbot.events;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.channel.TextChannel;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.peacefulcraft.cowbot.CowBot;
@@ -22,7 +23,7 @@ public class StaffChatEvent implements Listener {
         () -> {
           event.getSender().getGroups().forEach((group) -> CowBot.logMessage(group));
           String rank = RankTranslatior.serverRankToDiscordEmoji(event.getSender().getGroups().iterator().next());
-          String message = rank + " **" + event.getSenderName() + "**: " + event.getRawMessage();
+          String message = rank + " **" + ChatColor.stripColor(event.getSenderName() + "**: " + event.getRawMessage());
           Snowflake staffChannelId = Snowflake.of(CowBot.getConfig().getStaffchatChannelId());
           CowBot.getCow().getGatewayConnection().getChannelById(staffChannelId)
             .ofType(TextChannel.class)
