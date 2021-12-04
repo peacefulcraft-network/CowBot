@@ -46,12 +46,14 @@ public class CowBot extends Plugin {
 
   public void onEnable() {
     config = new Configuration();
-    if (config.getBotToken().length() > 0) {
+    if (config.getDatabaseName().length() > 0) {
       dbPool = new HikariManager(config);
       if (!dbPool.isAlive()) {
         logError("Unable to establish connections to MySQL server. Profile links will not work.");
       }
+    }
 
+    if (config.getBotToken().length() > 0) {
       cow = new Cow(config.getBotToken());
       botThread = new Thread(cow, "CowBot - Discord Bot");
       botThread.start();
@@ -109,6 +111,11 @@ public class CowBot extends Plugin {
     if (dbPool != null && dbPool.isAlive()) { dbPool.close(); }
 
     logMessage("CowBot Disabled");
+  }
+
+  // must strip message for "new" formatting characters which will slip through the legacy stripColor call. namely "&x"
+  public static String stripAmpersandBasedAndLegacyColorCodes(String message) {
+    return ChatColor.stripColor(message).replaceAll("&x", "");
   }
 
   public static void runAsync(Runnable task) {
