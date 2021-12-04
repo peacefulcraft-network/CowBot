@@ -19,7 +19,6 @@ public class GameChatEvent implements Listener {
         String rank = RankTranslatior.serverRankToDiscordEmoji(
           LuckPermsProvider.get().getUserManager().getUser(event.getSender().getUniqueId()).getPrimaryGroup()
         );
-
         String message = rank + " **" + CowBot.stripAmpersandBasedAndLegacyColorCodes(event.getRawSenderNickname() + "**: " + event.getRawMessage());
         Snowflake gamechatChannelId = Snowflake.of(CowBot.getConfig().getGamechatChannelId());
         CowBot.getCow().getGatewayConnection().getChannelById(gamechatChannelId)
