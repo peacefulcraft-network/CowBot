@@ -2,7 +2,6 @@ package net.peacefulcraft.cowbot.events;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.channel.TextChannel;
-import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.peacefulcraft.cowbot.CowBot;
@@ -13,6 +12,7 @@ import xyz.olivermartin.multichat.bungee.events.PostStaffChatEvent;
 public class StaffChatEvent implements Listener {
   @EventHandler
   public void staffChatEvent(PostStaffChatEvent event) {
+    CowBot.logMessage("chat message type=" + event.getType());
     if (event.getType() == "mod") {
       if (CowBot.getConfig().getStaffchatChannelId() == null || CowBot.getConfig().getStaffchatChannelId().length() < 1) { return; }
       
@@ -23,7 +23,7 @@ public class StaffChatEvent implements Listener {
         () -> {
           event.getSender().getGroups().forEach((group) -> CowBot.logMessage(group));
           String rank = RankTranslatior.serverRankToDiscordEmoji(event.getSender().getGroups().iterator().next());
-          String message = rank + " **" + ChatColor.stripColor(event.getSenderName() + "**: " + event.getRawMessage());
+          String message = rank + " **" + CowBot.stripAmpersandBasedAndLegacyColorCodes(event.getSenderName() + "**: " + event.getRawMessage());
           Snowflake staffChannelId = Snowflake.of(CowBot.getConfig().getStaffchatChannelId());
           CowBot.getCow().getGatewayConnection().getChannelById(staffChannelId)
             .ofType(TextChannel.class)
