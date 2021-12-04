@@ -12,7 +12,6 @@ import xyz.olivermartin.multichat.bungee.events.PostStaffChatEvent;
 public class StaffChatEvent implements Listener {
   @EventHandler
   public void staffChatEvent(PostStaffChatEvent event) {
-    CowBot.logMessage("chat message type=" + event.getType());
     if (event.getType() == "mod") {
       if (CowBot.getConfig().getStaffchatChannelId() == null || CowBot.getConfig().getStaffchatChannelId().length() < 1) { return; }
       
