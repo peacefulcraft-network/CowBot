@@ -15,7 +15,9 @@ public class GameChatMessageHandler {
     String author = message.getAuthor().get().getUsername();
     Member sender = message.getAuthor().get().asMember(message.getGuild().block().getId()).block();
     Color color = sender.getColor().block();
-    String roleHex = String.format("#%02X%02X%02X", color.getRed(), color.getBlue(), color.getGreen());
+
+    // fully qualified name to avoid name collisions with discord4j Color
+    java.awt.Color rankColor = new java.awt.Color(color.getRed(), color.getGreen(), color.getBlue());
     
     String senderRank = sender.getHighestRole().block().getName();
     String content = message.getContent();
@@ -24,7 +26,7 @@ public class GameChatMessageHandler {
       .append("[").color(ChatColor.GREEN)
       .append("Discord").color(ChatColor.GOLD)
       .append("][").color(ChatColor.GREEN)
-      .append(senderRank).color(ChatColor.of(roleHex))
+      .append(senderRank).color(ChatColor.of(rankColor))
       .append("]").color(ChatColor.GREEN)
       .append(author + ": ").color(ChatColor.GRAY)
       .append(content).color(ChatColor.WHITE).create();
@@ -33,7 +35,7 @@ public class GameChatMessageHandler {
         ChatColor.GREEN + " [" +
         ChatColor.GOLD + "Discord" +
         ChatColor.GREEN + "][" +
-        ChatColor.of(roleHex) + senderRank +
+        ChatColor.of(rankColor) + senderRank +
         ChatColor.GREEN + "]" + 
         ChatColor.GRAY + author + ": " + 
         ChatColor.WHITE + content
