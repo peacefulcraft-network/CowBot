@@ -1,7 +1,11 @@
 package net.peacefulcraft.cowbot.translation;
 
+import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.peacefulcraft.cowbot.CowBot;
+
+import java.util.logging.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,8 +13,9 @@ import java.util.Stack;
 
 /*
 * A simple Discord formatting parser which converts to Minecraft formatting.
+* Class is split up to allow better unit testing.
 * 
-* Will only check for the following:
+* Supports the following formatting features:
 * https://support.discord.com/hc/en-us/articles/210298617-Markdown-Text-101-Chat-Formatting-Bold-Italic-Underline-
 * 
 * Keys:
@@ -44,7 +49,17 @@ public class DiscordToMinecraftFormattingTranslator {
   private List<Stack<Range>> formats = new ArrayList<Stack<Range>>(NUM_FORMATS);
   private boolean[] ignore;
 
-  /* PUBLIC MEMBER FUNCTIONS */
+  // simple [start, end] range POD type
+  public static class Range {
+    public Range(int s, int e) {
+        start = s;
+        end = e;
+    }
+    public int start;
+    public int end;
+  }
+
+  /* PUBLIC MEMBERS */
   public DiscordToMinecraftFormattingTranslator(String content_) {
       content = content_;
 
@@ -55,39 +70,106 @@ public class DiscordToMinecraftFormattingTranslator {
           isOpen[i] = NOT_OPEN;
           formats.add(new Stack<Range>());
       }
+      parse();
+      logParsingData();
   }
 
-  public ComponentBuilder parse() {
+  // used by unit tests
+  public Stack<Range> getItalicsAst() {
+    return formats.get(ITALICS_AST);
+  }
+  public Stack<Range> getItalicsUnd() {
+    return formats.get(ITALICS_UND);
+  }
+  public Stack<Range> getBold() {
+    return formats.get(BOLD);
+  }
+  public Stack<Range> getUnderlines() {
+    return formats.get(UNDERLINE);
+  }
+  public Stack<Range> getStrikethroughs() {
+    return formats.get(STRIKETHROUGH);
+  }
+  public Stack<Range> getObfuscated() {
+    return formats.get(OBFUSCATED);
+  }
+
+  public void logParsingData() {
+    log("MESSAGE PARSING DEBUG LOG");
+    log("content: " + content);
+    String ignoreStr = "";
+    for (int i = 0; i < content.length(); ++i) {
+      ignoreStr += (ignore[i] ? "T" : "F");
+    }
+    log("ignores: " + ignoreStr);
+    String fmtString = "";
+    for (int i = 0; i < NUM_FORMATS; i++) {
+      if (formats.get(i).empty()) {
+        continue;
+      }
+      log(types[i] + " FOUND:");
+      for (int j = 0; j < formats.get(i).size(); ++j) {
+        log("\t(" + formats.get(i).get(j).start + "," + formats.get(i).get(j).end + ")");
+      }
+    }
+    log("FORMATTING: " + fmtString);
+  }
+
+  // with data structures initialized from a previous parse, translate
+  // the parsed components to minecraft based formatting
+  public ComponentBuilder translate() {
     ComponentBuilder cb = new ComponentBuilder();
-    return parse(cb);
+    return translate(cb);
+  }
+  public ComponentBuilder translate(ComponentBuilder formattedPrefix) {
+    // iterate through the chars and add them with their proper formatting to the builder
+    for (int i = 0; i < content.length(); ++i) {
+      // first pop all used-up formatters
+      for (int f = 0; f < formats.size(); ++f) {
+        while (!formats.get(f).empty() && formats.get(f).peek().end <= i) {
+          formats.get(f).pop();
+        }
+      }
+
+      // ignore if not adding
+      if (ignore[i]) {
+        continue;
+      }
+
+      // reset formatting then add current char with all types
+      formattedPrefix.append("").reset();
+      formattedPrefix.append("" + content.charAt(i));
+      formattedPrefix.italic(shouldAddFormatting(ITALICS_AST, i, formats) || shouldAddFormatting(ITALICS_UND, i, formats));
+      formattedPrefix.bold(shouldAddFormatting(BOLD, i, formats));
+      formattedPrefix.underlined(shouldAddFormatting(UNDERLINE, i, formats));
+      formattedPrefix.strikethrough(shouldAddFormatting(STRIKETHROUGH, i, formats));
+      formattedPrefix.obfuscated(shouldAddFormatting(OBFUSCATED, i, formats));
+    }
+
+    return formattedPrefix;
   }
 
-  public ComponentBuilder parse(ComponentBuilder formattedPrefix) {
+  /* PRIVATE MEMBERS */
+  private class OpenFormat {
+    public OpenFormat(int f, int p) {
+      format = f;
+      openedAtPos = p;
+    }
+    int format;
+    int openedAtPos;
+  }
 
+  private void parse() {
     // stack of observed formatting characters
     Stack<OpenFormat> stack = new Stack<OpenFormat>();
   
-    // todo mj try iterating in forward order
+    // todo mj need to iterate in forward order to have same behavior as discord?
   
     for (int i = content.length()-1; i >= 0; --i) {
-    // for (int i = 0; i < content.length(); ++i) {
       char curr = content.charAt(i);
       char prev = i == 0 ? ' ' : content.charAt(i-1);
       char prevprev = i > 1 ? content.charAt(i-2) : ' ';
       int format = -1;
-
-    //   // handle escape char first
-    //   if (prev == '\\' && (curr == '*' || curr == '_' || curr == '~' || curr == '|' || curr == '\\')) {
-    //     ignore[i-1] = true;
-    //     --i;
-    //     continue;
-    //   }
-    //   // also applies to all 'double char' formatting codes
-    //   if (prevprev == '\\' && ((curr == '~' && prev == '~') || (curr == '_' && prev == '_') || (curr == '|' && prev == '|') || (curr == '*' && prev == '*'))) {
-    //     ignore[i-2] = true;
-    //     i-=2;
-    //     continue;
-    //   }
 
       if (curr == '*') {
         format = ITALICS_AST;
@@ -117,7 +199,7 @@ public class DiscordToMinecraftFormattingTranslator {
 
       // if the code is escaped, continue, ignoring the escape char
       if (isEscaped(format, curr, prev, prevprev)) {
-        CowBot.logMessage("ESCAPED CHAR: " + (format != ESCAPE_CHAR ? types[format] : "ESCAPE_CHAR"));
+        log("ESCAPED CHAR: " + (format != ESCAPE_CHAR ? types[format] : "ESCAPE_CHAR"));
         if (isSingleCharFormatType(format)) {
             i--;
         } else {
@@ -175,54 +257,6 @@ public class DiscordToMinecraftFormattingTranslator {
       }
       stack.pop();
     }
-    
-    // for debugging purposes
-    logParsingData(ignore, formats);
-
-    // now iterate through the chars and add them with their proper formatting to the builder
-    for (int i = 0; i < content.length(); ++i) {
-      // first pop all used-up formatters
-      for (int f = 0; f < formats.size(); ++f) {
-        while (!formats.get(f).empty() && formats.get(f).peek().end <= i) {
-          formats.get(f).pop();
-        }
-      }
-
-      // ignore if not adding
-      if (ignore[i]) {
-        continue;
-      }
-
-      // reset formatting then add current char with all types
-      formattedPrefix.append("").reset();
-      formattedPrefix.append("" + content.charAt(i));
-      formattedPrefix.italic(shouldAddFormatting(ITALICS_AST, i, formats) || shouldAddFormatting(ITALICS_UND, i, formats));
-      formattedPrefix.bold(shouldAddFormatting(BOLD, i, formats));
-      formattedPrefix.underlined(shouldAddFormatting(UNDERLINE, i, formats));
-      formattedPrefix.strikethrough(shouldAddFormatting(STRIKETHROUGH, i, formats));
-      formattedPrefix.obfuscated(shouldAddFormatting(OBFUSCATED, i, formats));
-    }
-
-    return formattedPrefix;
-  }
-
-  /* PRIVATE HELPERS */
-  private class OpenFormat {
-    public OpenFormat(int f, int p) {
-      format = f;
-      openedAtPos = p;
-    }
-    int format;
-    int openedAtPos;
-  }
-
-  private class Range {
-      public Range(int s, int e) {
-          start = s;
-          end = e;
-      }
-      int start;
-      int end;
   }
 
   private boolean isEscaped(int format, char curr, char prev, char prevprev) {
@@ -242,24 +276,10 @@ public class DiscordToMinecraftFormattingTranslator {
     return !formats.get(fmt).empty() && i >= formats.get(fmt).peek().start;
   }
 
-  private void logParsingData(boolean[] ignore, List<Stack<Range>> formats) {
-    CowBot.logMessage("MESSAGE PARSING DEBUG LOG");
-    CowBot.logMessage("content: " + content);
-    String ignoreStr = "";
-    for (int i = 0; i < content.length(); ++i) {
-      ignoreStr += (ignore[i] ? "T" : "F");
+  private void log(String message) {
+    if (CowBot.getInstance() != null) {
+      String prefix = ChatColor.GREEN + "[" + ChatColor.AQUA + "TRANSLATOR" + ChatColor.GREEN + "]" + ChatColor.RESET;
+      CowBot.logMessage(prefix + message);
     }
-    CowBot.logMessage("ignores: " + ignoreStr);
-    String fmtString = "";
-    for (int i = 0; i < NUM_FORMATS; i++) {
-      if (formats.get(i).empty()) {
-        continue;
-      }
-      CowBot.logMessage(types[i] + " FOUND:");
-      for (int j = 0; j < formats.get(i).size(); ++j) {
-        CowBot.logMessage("\t(" + formats.get(i).get(j).start + "," + formats.get(i).get(j).end + ")");
-      }
-    }
-    CowBot.logMessage("FORMATTING: " + fmtString);
   }
 }

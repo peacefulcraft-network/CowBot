@@ -32,7 +32,7 @@ public class GameChatMessageHandler {
       .append(author + ": ").color(ChatColor.GRAY);
 
     DiscordToMinecraftFormattingTranslator translator = new DiscordToMinecraftFormattingTranslator(content);
-    formattedComponents = translator.parse(formattedComponents);
+    formattedComponents = translator.translate(formattedComponents);
 
     BaseComponent[] formattedMessage = formattedComponents.color(ChatColor.WHITE).create();
 
