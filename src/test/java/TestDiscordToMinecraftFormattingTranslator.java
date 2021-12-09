@@ -168,7 +168,7 @@ public class TestDiscordToMinecraftFormattingTranslator {
     }
 
     // @Test
-    // public void testOverlappingItalicsBold1() {
+    // public void testOverlappingItalicsBold0() {
     //     String message = "***b**i*";
     //     DiscordToMinecraftFormattingTranslator translator = new DiscordToMinecraftFormattingTranslator(message);
     //     Stack<DiscordToMinecraftFormattingTranslator.Range> bold = translator.getBold();
@@ -186,6 +186,24 @@ public class TestDiscordToMinecraftFormattingTranslator {
     // }
 
     @Test
+    public void testOverlappingItalicsBold1() {
+        String message = "_**b**i_";
+        DiscordToMinecraftFormattingTranslator translator = new DiscordToMinecraftFormattingTranslator(message);
+        Stack<DiscordToMinecraftFormattingTranslator.Range> bold = translator.getBold();
+        Stack<DiscordToMinecraftFormattingTranslator.Range> italicsUnd = translator.getItalicsUnd();
+
+        assertEquals(1, bold.peek().start);
+        assertEquals(4, bold.peek().end);
+        bold.pop();
+        assertTrue(bold.empty());
+
+        assertEquals(0, italicsUnd.peek().start);
+        assertEquals(7, italicsUnd.peek().end);
+        italicsUnd.pop();
+        assertTrue(italicsUnd.empty());
+    }
+
+    @Test
     public void testOverlappingItalicsBold2() {
         String message = "***i*b**";
         DiscordToMinecraftFormattingTranslator translator = new DiscordToMinecraftFormattingTranslator(message);
@@ -201,5 +219,76 @@ public class TestDiscordToMinecraftFormattingTranslator {
         assertEquals(4, italicsAst.peek().end);
         italicsAst.pop();
         assertTrue(italicsAst.empty());
+    }
+
+    @Test
+    public void testOverlappingUnderlinedItalics1() {
+        String message = "___i_u__";
+        DiscordToMinecraftFormattingTranslator translator = new DiscordToMinecraftFormattingTranslator(message);
+        Stack<DiscordToMinecraftFormattingTranslator.Range> unds = translator.getUnderlines();
+        Stack<DiscordToMinecraftFormattingTranslator.Range> italicsUnd = translator.getItalicsUnd();
+
+        assertEquals(0, unds.peek().start);
+        assertEquals(6, unds.peek().end);
+        unds.pop();
+        assertTrue(unds.empty());
+
+        assertEquals(2, italicsUnd.peek().start);
+        assertEquals(4, italicsUnd.peek().end);
+        italicsUnd.pop();
+        assertTrue(italicsUnd.empty());
+    }
+
+    @Test
+    public void testComplexOverlap() {
+        String message = "a~~b*cd__e__f*g~~**b**";
+        DiscordToMinecraftFormattingTranslator translator = new DiscordToMinecraftFormattingTranslator(message);
+        Stack<DiscordToMinecraftFormattingTranslator.Range> unds = translator.getUnderlines();
+        Stack<DiscordToMinecraftFormattingTranslator.Range> italics = translator.getItalicsAst();
+        Stack<DiscordToMinecraftFormattingTranslator.Range> strikes = translator.getStrikethroughs();
+        Stack<DiscordToMinecraftFormattingTranslator.Range> bold = translator.getBold();
+
+        assertEquals(7, unds.peek().start);
+        assertEquals(10, unds.peek().end);
+        unds.pop();
+        assertTrue(unds.empty());
+
+        assertEquals(4, italics.peek().start);
+        assertEquals(13, italics.peek().end);
+        italics.pop();
+        assertTrue(italics.empty());
+
+        assertEquals(1, strikes.peek().start);
+        assertEquals(15, strikes.peek().end);
+        strikes.pop();
+        assertTrue(strikes.empty());
+
+        assertEquals(17, bold.peek().start);
+        assertEquals(20, bold.peek().end);
+        bold.pop();
+        assertTrue(bold.empty());
+    }
+
+    @Test
+    public void testMultipleItalics() {
+        String message = "*a*bbbb*ccc*d*ee*f*g*h*i*";
+        DiscordToMinecraftFormattingTranslator translator = new DiscordToMinecraftFormattingTranslator(message);
+        Stack<DiscordToMinecraftFormattingTranslator.Range> italics = translator.getItalicsAst();
+
+        assertEquals(0, italics.peek().start);
+        assertEquals(2, italics.peek().end);
+        italics.pop();
+        assertEquals(7, italics.peek().start);
+        assertEquals(11, italics.peek().end);
+        italics.pop();
+        assertEquals(13, italics.peek().start);
+        assertEquals(16, italics.peek().end);
+        italics.pop();
+        assertEquals(18, italics.peek().start);
+        assertEquals(20, italics.peek().end);
+        italics.pop();
+        assertEquals(22, italics.peek().start);
+        assertEquals(24, italics.peek().end);
+        italics.pop();
     }
 }

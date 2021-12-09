@@ -1,11 +1,8 @@
 package net.peacefulcraft.cowbot.translation;
 
-import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.peacefulcraft.cowbot.CowBot;
-
-import java.util.logging.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +11,7 @@ import java.util.Stack;
 /*
 * A simple Discord formatting parser which converts to Minecraft formatting.
 * Class is split up to allow better unit testing.
+* Does not match true Discord formatting for complex patterns.
 * 
 * Supports the following formatting features:
 * https://support.discord.com/hc/en-us/articles/210298617-Markdown-Text-101-Chat-Formatting-Bold-Italic-Underline-
@@ -71,7 +69,7 @@ public class DiscordToMinecraftFormattingTranslator {
           formats.add(new Stack<Range>());
       }
       parse();
-      logParsingData();
+      // logParsingData();
   }
 
   // used by unit tests
@@ -162,8 +160,6 @@ public class DiscordToMinecraftFormattingTranslator {
   private void parse() {
     // stack of observed formatting characters
     Stack<OpenFormat> stack = new Stack<OpenFormat>();
-  
-    // todo mj need to iterate in forward order to have same behavior as discord?
   
     for (int i = content.length()-1; i >= 0; --i) {
       char curr = content.charAt(i);
