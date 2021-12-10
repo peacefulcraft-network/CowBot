@@ -195,7 +195,6 @@ public class DiscordToMinecraftFormattingTranslator {
 
       // if the code is escaped, continue, ignoring the escape char
       if (isEscaped(format, curr, prev, prevprev)) {
-        log("ESCAPED CHAR: " + (format != ESCAPE_CHAR ? types[format] : "ESCAPE_CHAR"));
         if (isSingleCharFormatType(format)) {
             i--;
         } else {
@@ -221,15 +220,10 @@ public class DiscordToMinecraftFormattingTranslator {
 
       // determine if this is an opening reference or a closing one
       if (isOpen[format] != NOT_OPEN) {
-        // close the reference, popping any which are on "top" of it in the process
+        // close the reference, popping and restoring any which are on "top" of it in the process
         while (stack.peek().format != format) {
           isOpen[stack.peek().format] = NOT_OPEN;
-
-          // un-ignore the keys
-          ignore[stack.peek().openedAtPos] = false;
-          if (!isSingleCharFormatType(stack.peek().format)) {
-            ignore[stack.peek().openedAtPos+1] = false;
-          }
+          restoreUnclosedFormat(stack.peek());
           stack.pop();
         }
 
@@ -245,13 +239,18 @@ public class DiscordToMinecraftFormattingTranslator {
       }
     }
 
-    // whatever is open still never got closed, must pop off and un-ignore
+    // restore all formats which were never closed
     while(!stack.empty()) {
-      ignore[stack.peek().openedAtPos] = false;
-      if (!isSingleCharFormatType(stack.peek().format)) {
-        ignore[stack.peek().openedAtPos+1] = false;
-      }
+      restoreUnclosedFormat(stack.peek());
       stack.pop();
+    }
+  }
+
+  private void restoreUnclosedFormat(OpenFormat open) {
+    ignore[open.openedAtPos] = false;
+    if (!isSingleCharFormatType(open.format)) {
+      // need to un-ignore next character if double
+      ignore[open.openedAtPos+1] = false;
     }
   }
 
