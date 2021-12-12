@@ -25,6 +25,7 @@ public class TestDiscordToMinecraftFormattingTranslator {
         assertTrue(translator.getUnderlines().empty());
         assertTrue(translator.getObfuscated().empty());
         assertTrue(translator.getStrikethroughs().empty());
+        translator.translate();
     }
 
     @Test
@@ -41,6 +42,7 @@ public class TestDiscordToMinecraftFormattingTranslator {
         assertTrue(translator.getUnderlines().empty());
         assertTrue(translator.getObfuscated().empty());
         assertTrue(translator.getStrikethroughs().empty());
+        translator.translate();
     }
 
     @Test
@@ -57,6 +59,7 @@ public class TestDiscordToMinecraftFormattingTranslator {
         assertTrue(translator.getUnderlines().empty());
         assertTrue(translator.getObfuscated().empty());
         assertTrue(translator.getStrikethroughs().empty());
+        translator.translate();
     }
 
     @Test
@@ -73,6 +76,7 @@ public class TestDiscordToMinecraftFormattingTranslator {
         assertTrue(translator.getItalicsUnd().empty());
         assertTrue(translator.getObfuscated().empty());
         assertTrue(translator.getStrikethroughs().empty());
+        translator.translate();
     }
 
     @Test
@@ -89,6 +93,7 @@ public class TestDiscordToMinecraftFormattingTranslator {
         assertTrue(translator.getItalicsUnd().empty());
         assertTrue(translator.getUnderlines().empty());
         assertTrue(translator.getStrikethroughs().empty());
+        translator.translate();
     }
 
     @Test
@@ -105,6 +110,7 @@ public class TestDiscordToMinecraftFormattingTranslator {
         assertTrue(translator.getItalicsUnd().empty());
         assertTrue(translator.getUnderlines().empty());
         assertTrue(translator.getObfuscated().empty());
+        translator.translate();
     }
 
     @Test
@@ -123,6 +129,7 @@ public class TestDiscordToMinecraftFormattingTranslator {
         assertEquals(4, italics.peek().end);
         italics.pop();
         assertTrue(italics.empty());
+        translator.translate();
     }
 
     @Test
@@ -141,6 +148,7 @@ public class TestDiscordToMinecraftFormattingTranslator {
         assertEquals(4, italics.peek().end);
         italics.pop();
         assertTrue(italics.empty());
+        translator.translate();
     }
 
     @Test
@@ -165,6 +173,7 @@ public class TestDiscordToMinecraftFormattingTranslator {
         assertEquals(9, italicsAst.peek().end);
         italicsAst.pop();
         assertTrue(italicsAst.empty());
+        translator.translate();
     }
 
     // @Test
@@ -201,6 +210,7 @@ public class TestDiscordToMinecraftFormattingTranslator {
         assertEquals(7, italicsUnd.peek().end);
         italicsUnd.pop();
         assertTrue(italicsUnd.empty());
+        translator.translate();
     }
 
     @Test
@@ -219,6 +229,7 @@ public class TestDiscordToMinecraftFormattingTranslator {
         assertEquals(4, italicsAst.peek().end);
         italicsAst.pop();
         assertTrue(italicsAst.empty());
+        translator.translate();
     }
 
     @Test
@@ -237,6 +248,7 @@ public class TestDiscordToMinecraftFormattingTranslator {
         assertEquals(4, italicsUnd.peek().end);
         italicsUnd.pop();
         assertTrue(italicsUnd.empty());
+        translator.translate();
     }
 
     @Test
@@ -267,6 +279,7 @@ public class TestDiscordToMinecraftFormattingTranslator {
         assertEquals(20, bold.peek().end);
         bold.pop();
         assertTrue(bold.empty());
+        translator.translate();
     }
 
     @Test
@@ -290,5 +303,75 @@ public class TestDiscordToMinecraftFormattingTranslator {
         assertEquals(22, italics.peek().start);
         assertEquals(24, italics.peek().end);
         italics.pop();
+        translator.translate();
+    }
+    @Test
+    public void testMultipleItalicsTranslateFirst() {
+        String message = "*a*bbbb*ccc*d*ee*f*_g_*h_i_";
+        DiscordToMinecraftFormattingTranslator translator = new DiscordToMinecraftFormattingTranslator(message);
+        translator.translate();
+    }
+
+    @Test
+    public void testEscapeBasic() {
+        String message = "\\*a\\*b*c*";
+        DiscordToMinecraftFormattingTranslator translator = new DiscordToMinecraftFormattingTranslator(message);
+        Stack<DiscordToMinecraftFormattingTranslator.Range> italics = translator.getItalicsAst();
+
+        assertEquals(6, italics.peek().start);
+        assertEquals(8, italics.peek().end);
+        italics.pop();
+        assertTrue(italics.empty());
+        translator.translate();
+    }
+
+    @Test
+    public void testEscapeBasic2() {
+        String message = "\\**a**";
+        DiscordToMinecraftFormattingTranslator translator = new DiscordToMinecraftFormattingTranslator(message);
+        Stack<DiscordToMinecraftFormattingTranslator.Range> bold = translator.getBold();
+
+        assertTrue(bold.empty());
+        translator.translate();
+    }
+
+    @Test
+    public void testEscapedEscape() {
+        String message = "*\\\\a*";
+        DiscordToMinecraftFormattingTranslator translator = new DiscordToMinecraftFormattingTranslator(message);
+        Stack<DiscordToMinecraftFormattingTranslator.Range> italics = translator.getItalicsAst();
+
+        assertEquals(0, italics.peek().start);
+        assertEquals(4, italics.peek().end);
+        italics.pop();
+        assertTrue(italics.empty());
+        translator.translate();
+    }
+
+    @Test
+    public void testUnclosedFormatTopStack() {
+        String message = "b*_c*";
+        DiscordToMinecraftFormattingTranslator translator = new DiscordToMinecraftFormattingTranslator(message);
+        Stack<DiscordToMinecraftFormattingTranslator.Range> italicsAst = translator.getItalicsAst();
+        Stack<DiscordToMinecraftFormattingTranslator.Range> italicsUnd = translator.getItalicsUnd();
+
+        assertEquals(1, italicsAst.peek().start);
+        assertEquals(4, italicsAst.peek().end);
+        italicsAst.pop();
+        assertTrue(italicsAst.empty());
+        assertTrue(italicsUnd.empty());
+        translator.translate();
+    }
+
+    @Test
+    public void testFakeStrikeObfuscated() {
+        String message = "~b~|c|";
+        DiscordToMinecraftFormattingTranslator translator = new DiscordToMinecraftFormattingTranslator(message);
+        Stack<DiscordToMinecraftFormattingTranslator.Range> strikes = translator.getStrikethroughs();
+        Stack<DiscordToMinecraftFormattingTranslator.Range> obs = translator.getObfuscated();
+
+        assertTrue(strikes.empty());
+        assertTrue(obs.empty());
+        translator.translate();
     }
 }
