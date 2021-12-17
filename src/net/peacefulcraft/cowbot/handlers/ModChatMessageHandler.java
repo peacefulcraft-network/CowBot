@@ -13,7 +13,7 @@ public class ModChatMessageHandler {
 
   public static void handle(Message message) {
     if (!message.getAuthor().isPresent()) { return; }
-    String author = message.getAuthor().get().getUsername();;
+    String author = message.getAuthor().get().getUsername();
     String content = message.getContent();
     lastUsernameRelayed = author;
     lastMessageRelayed = content;
