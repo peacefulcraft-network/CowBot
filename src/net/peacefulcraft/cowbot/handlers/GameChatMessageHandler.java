@@ -2,6 +2,7 @@ package net.peacefulcraft.cowbot.handlers;
 
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.rest.util.Color;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -21,7 +22,13 @@ public class GameChatMessageHandler {
     java.awt.Color rankColor = new java.awt.Color(color.getRed(), color.getGreen(), color.getBlue());
     
     String senderRank = sender.getHighestRole().block().getName();
-    String content = message.getContent();
+    String content = message.getContent().trim();
+		// TODO: Do actual byte counting instead of clamping the message and hoping it doesn't exceed with formating + name
+		if (content.length() > 256) {
+			content = content.substring(0, 256);
+			// leave ✂️ reaction if the message was chopped
+			message.addReaction(ReactionEmoji.unicode("\u2702")).block();
+		}
 
     ComponentBuilder formattedComponents = new ComponentBuilder()
       .append("[").color(ChatColor.GREEN)
